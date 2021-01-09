@@ -13,28 +13,31 @@
   (load bootstrap-file nil 'nomessage))
 ;; straight.el init
 
-(straight-use-package 'use-package)
+(straight-use-package 'use-package) ;; install use-package
 
-;; install use-package
 
+(setq gc-cons-threshold 100000000)
 (setq comp-deferred-compilation t)
 (electric-pair-mode) 
 (global-display-line-numbers-mode)
 
 (add-to-list 'default-frame-alist
-	     '(font . "Iosevka-12"))
-(set-fontset-font t 'hangul (font-spec :name "D2Coding"))
-(global-prettify-symbols-mode)
+	     '(font . "Sarasa Fixed SC-12"))
 
-(prefer-coding-system 'utf-8)
+
+
+
+(set-default-coding-systems 'utf-8)
 (set-language-environment "Korean")
 
 (scroll-bar-mode -1)
 (tool-bar-mode   -1)
+(setq backup-directory-alist `(("." . "~/.emacs_saves"))) ;; set backup directory
 
 
 (use-package evil
   :config
+  (evil-set-initial-state 'vterm-mode 'emacs)
   (evil-mode))
 (use-package evil-commentary
   :config
@@ -73,5 +76,15 @@
 (use-package pdf-tools
   :config (pdf-loader-install))
 
+(use-package centaur-tabs
+  :demand
+  :config
+  (setq centaur-tabs-style "bar")
+  (setq centaur-tabs-set-bar 'under)
+  (centaur-tabs-mode t)
+  (centaur-tabs-headline-match)
+  :bind
+  ("C-<prior>" . centaur-tabs-backward)
+  ("C-<next>"  . centaur-tabs-forward))
 (use-package server
   :config (server-start)) ;; start emacs server at startup
