@@ -1,4 +1,4 @@
-(setq straight-use-package-by-default t)
+;; <straight install>
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -11,80 +11,98 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
-;; straight.el init
 
-(straight-use-package 'use-package) ;; install use-package
+;; </straight install>
 
-
-(setq gc-cons-threshold 100000000)
-(setq comp-deferred-compilation t)
-(electric-pair-mode) 
-(global-display-line-numbers-mode)
-
-(add-to-list 'default-frame-alist
-	     '(font . "Sarasa Fixed SC-12"))
-
-
-
-
-(set-default-coding-systems 'utf-8)
-(set-language-environment "Korean")
-
-(scroll-bar-mode -1)
-(tool-bar-mode   -1)
-(setq backup-directory-alist `(("." . "~/.emacs_saves"))) ;; set backup directory
-
-
-(use-package evil
+(straight-use-package 'leaf)
+(straight-use-package 'leaf-keywords)
+(leaf leaf-keywords
   :config
-  (evil-set-initial-state 'vterm-mode 'emacs)
-  (evil-mode))
-(use-package evil-commentary
+  (leaf-keywords-init))
+
+(leaf cus-start
+  :doc "define customization properties of builtins"
+  :custom ((menu-bar-mode . nil)
+	   (tool-bar-mode . nil)
+	   (scroll-bar-mode . nil)
+	   (electric-pair-mode . 1)
+	   (prefer-codig-system . 'utf-8)
+	   (global-display-line-numbers-mode . 1))
+
+  :setq ((gc-cons-threshold       . 100000000)
+	 (read-process-output-max . 1048576))
   :config
-  (evil-commentary-mode))
+  (set-frame-font "Sarasa Fixed SC-13" nil t)
+  (set-language-environment "Korean"))
 
-(use-package nord-theme
-  :config (load-theme 'nord t))
+(leaf evil
+  :straight t
+  :custom
+  ;; use emacs's default redo system(only for emacs 28 and over)
+  (evil-undo-system . 'undo-redo) 
 
-(use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
-(use-package vterm
-  :config (setq vterm-kill-buffer-on-exit t))
+  :init
+  (leaf evil-leader
+    :straight t
+    :config
+    (evil-leader/set-key
+      "s" 'eshell
+      "b" 'switch-to-buffer
+      "d" 'ranger)
+    (global-evil-leader-mode)
+    :custom
+    (evil-leader/leader . "<SPC>"))
 
-(use-package ivy
+  (leaf evil-commentary
+    :straight t
+    :hook
+    (prog-mode-hook . evil-commentary-mode))
+
   :config
-  (setq ivy-wrap t
-	ivy-use-selectable-prompt t)
-  (ivy-mode))
-
-(use-package swiper
-  :bind (:map evil-normal-state-map
-	      ("C-s" . swiper)))
-
-(use-package company
-  :hook (prog-mode . company-mode)
-  :config
-  (setq company-backends
-	'((company-keywords company-capf)
-	  (company-abbrev company-dabbrev)))
-  (setq company-idle-delay 0) ;; set company delay 0
-
+  (evil-mode 1)
   :bind
-  (:map company-active-map
-	("<tab>" . company-complete-common-or-cycle)))
+  (:evil-motion-state-map
+   ("j" . "gj")
+   ("k" . "gk")))
 
-(use-package pdf-tools
-  :config (pdf-loader-install))
-
-(use-package centaur-tabs
-  :demand
+(leaf ivy
+  :straight t
+  :init
+  (leaf counsel :straight t)
+  (leaf swiper :straight t)
+  (leaf smex :straight t)
   :config
-  (setq centaur-tabs-style "bar")
-  (setq centaur-tabs-set-bar 'under)
-  (centaur-tabs-mode t)
-  (centaur-tabs-headline-match)
+  (ivy-mode 1)
+  (smex-initialize)
+  :setq
+  ((ivy-wrap . t)
+   (ivy-use-selectable-prompt . t))
   :bind
-  ("C-<prior>" . centaur-tabs-backward)
-  ("C-<next>"  . centaur-tabs-forward))
-(use-package server
-  :config (server-start)) ;; start emacs server at startup
+  ((:ivy-switch-buffer-map
+    ("C-j" . ivy-next-line)
+    ("C-k" . ivy-previous-line))
+   (:ivy-minibuffer-map
+    ("C-j" . ivy-next-line)
+    ("C-k" . ivy-previous-line))
+   (:evil-normal-state-map
+    ("C-s" . swiper))
+   ("M-x" . counsel-M-x)))
+
+(leaf rainbow-delimiters
+  :straight t
+  :hook
+  (prog-mode-hook . rainbow-delimiters-mode))
+
+(leaf base16-theme
+  :straight t
+  :config
+  (load-theme 'base16-embers t))
+
+(leaf ranger
+  :straight t
+  :config
+  (ranger-override-dired-mode t)
+  :setq
+  ((ranger-max-preview-size . 10)
+  (ranger-dont-show-binary . t)
+  (ranger-max-preview-size . 10)))
